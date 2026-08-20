@@ -40,7 +40,10 @@ SECRET_KEY = 'django-insecure-$l$#a*)-ispg(=(7ii218pp!3-jj&1(rugbfoaid)5^hn2_kpc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+
+    "site-inspection-llm.onrender.com", "localhost", "127.0.0.1",
+]
 
 
 # Application definition
