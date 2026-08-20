@@ -1,0 +1,62 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fieldnote / Site intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">◒</span> fieldnote</a>
+    <div class="topbar-meta"><span class="status-dot"></span> Local workspace <span class="slash">/</span> Intake desk</div>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <div class="eyebrow">Inspection intelligence <span>01</span></div>
+      <h1>Turn field notes<br><em>into a clear brief.</em></h1>
+      <p class="lede">Drop in the rough version. Fieldnote finds the signal, checks the shape, and gives your team a site card they can act on.</p>
+    </section>
+
+    <section class="workspace">
+      <div class="input-panel">
+        <div class="panel-heading"><div><span class="kicker">01 / Raw input</span><h2>What happened on site?</h2></div><span class="count" id="char-count">0 / 5000</span></div>
+        <form method="post" id="extract-form">
+          {% csrf_token %}
+          <textarea id="notes" name="notes" maxlength="5000" placeholder="Paste a voice memo, email, or inspection log...">{{ source_text }}</textarea>
+          <div class="input-footer"><span class="hint">Plain language works best. Include names, addresses, assets, and costs.</span><button class="primary-btn" type="submit"><span>Extract site data</span><span class="arrow">↗</span></button></div>
+        </form>
+        {% if error %}<div class="error-message">{{ error }}</div>{% endif %}
+        <div class="example-row"><span>Try an example</span><button type="button" class="example-btn" id="example-btn">Riverside Community Center <span>↗</span></button></div>
+      </div>
+
+      <div class="result-panel {% if site_data %}has-result{% endif %}">
+        {% if site_data %}
+        <div class="panel-heading"><div><span class="kicker">02 / Clean output</span><h2>Site card <span class="validated">✓ Validated</span></h2></div><span class="confidence">High confidence</span></div>
+        {% if missing_fields %}<div class="card-warning" style="background:#fff0c9;border-left:3px solid #d49120;color:#765719;padding:11px 13px;font-size:12px;margin:-8px 0 18px;line-height:1.45">Needs attention before saving: {{ missing_fields|join:", " }}.</div>{% endif %}
+        <div class="site-card" id="site-card">
+          <div class="card-top"><div class="site-index">SITE / 001</div><select class="priority-select editable" data-field="priority"><option {% if site_data.priority == 'Normal' %}selected{% endif %}>Normal</option><option {% if site_data.priority == 'High' %}selected{% endif %}>High</option><option {% if site_data.priority == 'Urgent' %}selected{% endif %}>Urgent</option><option {% if site_data.priority == 'Low' %}selected{% endif %}>Low</option></select></div>
+          <label class="field-label">Client name<input class="editable prominent" data-field="client_name" value="{{ site_data.client_name }}"></label>
+          <label class="field-label">Site / facility<input class="editable" data-field="site_name" value="{{ site_data.site_name }}" placeholder="Add site name"></label>
+          <label class="field-label">Address<input class="editable" data-field="address" value="{{ site_data.address }}"></label>
+          <div class="two-col"><label class="field-label">Estimated budget<input class="editable" data-field="estimated_budget" value="{{ site_data.estimated_budget }}"></label><label class="field-label">Follow-up date<input class="editable" data-field="follow_up_date" value="{{ site_data.follow_up_date }}"></label></div>
+          <div class="field-label">Equipment <div class="chips" data-field="equipment">{% for item in site_data.equipment %}<span class="chip">{{ item }}<button type="button" class="remove-chip" aria-label="Remove {{ item }}">×</button></span>{% empty %}<span class="muted">No equipment captured</span>{% endfor %}</div></div>
+          <label class="field-label">Context notes<textarea class="editable notes-edit" data-field="notes">{{ site_data.notes }}</textarea></label>
+          <div class="card-actions"><button type="button" class="ghost-btn" id="reset-btn">Reset edits</button><button type="button" class="save-btn" id="save-btn">Save site card <span>→</span></button></div>
+          <div class="save-status" id="save-status" aria-live="polite"></div>
+        </div>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">✦</div><span class="kicker">02 / Clean output</span><h2>Your site card<br>will appear here.</h2><p>Extracted fields stay editable, so the final brief remains in your hands.</p></div>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+  <footer><span>FIELDNOTE / INTAKE SYSTEM</span><span>Structured by design.</span></footer>
+  <script>window.siteData = JSON.parse('{{ site_json|escapejs }}');</script>
+  <script src="{% static 'app.js' %}"></script>
+</body>
+</html>
